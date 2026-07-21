@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearFrame — Pro Watermark Remover & Video Compressor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="logo">✦ Clear<span>Frame</span></div>
+  <nav>
+    <a href="#how">How it works</a>
+    <a href="#tool" class="btn-small">Try it free</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Remove Watermarks &amp; Compress Videos <span class="grad">Instantly</span></h1>
+  <p>Pro content-aware engine rebuilds the background behind the watermark, layer by layer.
+     Plus a built-in compressor to shrink file size. Free, private, runs entirely in your browser.</p>
+</section>
+
+<!-- ============ TOOL SWITCHER ============ -->
+<div class="tabs" id="tool">
+  <button class="tab active" data-tool="remover">🖌 Watermark Remover</button>
+  <button class="tab" data-tool="compressor">🗜 Video Compressor</button>
+</div>
+
+<!-- ==================================================== -->
+<!-- ============== TOOL 1: WATERMARK REMOVER ========== -->
+<!-- ==================================================== -->
+<main class="tool" id="removerTool">
+
+  <!-- STEP 1: UPLOAD -->
+  <div class="panel" id="uploadPanel">
+    <div class="dropzone" id="dropzone">
+      <div class="drop-icon">📤</div>
+      <h2>Upload Your Clip</h2>
+      <p>Drag &amp; drop your video here, or click to browse</p>
+      <p class="hint">MP4 / WEBM · Up to 2 GB</p>
+      <input type="file" id="fileInput" accept="video/mp4,video/webm" hidden />
+    </div>
+    <p class="error" id="uploadError"></p>
+  </div>
+
+  <!-- STEP 2: EDITOR -->
+  <div class="panel hidden" id="editorPanel">
+    <h2 class="panel-title">🖌 Highlight the Watermark Area</h2>
+    <p class="panel-sub">Paint over the watermark. The engine rebuilds the pixels underneath so the background looks untouched.</p>
+
+    <div class="video-wrap" id="videoWrap">
+      <video id="video" playsinline muted></video>
+      <canvas id="maskCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Brush size <span id="brushVal">40</span> px</label>
+        <input type="range" id="brushSize" min="5" max="150" value="40" />
+      </div>
+      <div class="control-group">
+        <label>Trim start (s)</label>
+        <input type="number" id="trimStart" min="0" step="0.1" value="0" />
+      </div>
+      <div class="control-group">
+        <label>Trim end (s)</label>
+        <input type="number" id="trimEnd" min="0" step="0.1" value="0" />
+      </div>
+      <button class="btn ghost" id="clearMask">✖ Clear Mask</button>
+      <button class="btn primary" id="removeBtn">⚡ Remove Now</button>
+    </div>
+    <p class="error" id="editError"></p>
+  </div>
+
+  <!-- STEP 3: PROCESSING -->
+  <div class="panel hidden" id="processPanel">
+    <h2 class="panel-title">Reconstructing background pixels…</h2>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <p class="panel-sub" id="progressText">0%</p>
+  </div>
+
+  <!-- STEP 4: RESULT -->
+  <div class="panel hidden" id="resultPanel">
+    <h2 class="panel-title">✅ Done — Watermark Removed</h2>
+    <div class="video-wrap"><video id="resultVideo" controls></video></div>
+    <div class="controls center">
+      <a class="btn primary" id="downloadBtn" download="watermark-removed.webm">⬇ Download Video</a>
+      <button class="btn ghost" id="restartBtn">↻ New Video</button>
+    </div>
+  </div>
+</main>
+
+<!-- ==================================================== -->
+<!-- ============== TOOL 2: VIDEO COMPRESSOR =========== -->
+<!-- ==================================================== -->
+<main class="tool hidden" id="compressorTool">
+
+  <div class="panel" id="cUploadPanel">
+    <div class="dropzone" id="cDropzone">
+      <div class="drop-icon">🗜</div>
+      <h2>Upload Video to Compress</h2>
+      <p>Drag &amp; drop your video here, or click to browse</p>
+      <p class="hint">MP4 / WEBM · Up to 2 GB</p>
+      <input type="file" id="cFileInput" accept="video/mp4,video/webm" hidden />
+    </div>
+    <p class="error" id="cUploadError"></p>
+  </div>
+
+  <div class="panel hidden" id="cOptionsPanel">
+    <h2 class="panel-title">Choose Compression Level</h2>
+    <p class="panel-sub" id="cFileInfo"></p>
+
+    <div class="quality-grid">
+      <label class="quality-card">
+        <input type="radio" name="quality" value="high" checked />
+        <h3>🔵 High Quality</h3>
+        <p>Original resolution · light compression. Best look, moderate savings.</p>
+      </label>
+      <label class="quality-card">
+        <input type="radio" name="quality" value="medium" />
+        <h3>🟣 Medium</h3>
+        <p>75% resolution · balanced bitrate. Great size/quality trade-off.</p>
+      </label>
+      <label class="quality-card">
+        <input type="radio" name="quality" value="low" />
+        <h3>🟢 Low Size</h3>
+        <p>50% resolution · maximum compression. Smallest possible file.</p>
+      </label>
+    </div>
+
+    <div class="controls center">
+      <button class="btn primary" id="compressBtn">🗜 Compress Now</button>
+      <button class="btn ghost" id="cRestartBtn1">↻ Change Video</button>
+    </div>
+    <p class="error" id="cError"></p>
+  </div>
+
+  <div class="panel hidden" id="cProcessPanel">
+    <h2 class="panel-title">Compressing your video…</h2>
+    <div class="progress-track"><div class="progress-bar" id="cProgressBar"></div></div>
+    <p class="panel-sub" id="cProgressText">0%</p>
+  </div>
+
+  <div class="panel hidden" id="cResultPanel">
+    <h2 class="panel-title">✅ Compression Complete</h2>
+    <p class="panel-sub" id="cResultInfo"></p>
+    <div class="video-wrap"><video id="cResultVideo" controls></video></div>
+    <div class="controls center">
+      <a class="btn primary" id="cDownloadBtn" download="compressed.webm">⬇ Download Compressed Video</a>
+      <button class="btn ghost" id="cRestartBtn2">↻ New Video</button>
+    </div>
+  </div>
+
+  <video id="cVideo" playsinline muted hidden></video>
+</main>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="steps" id="how">
+  <h2>How It Works</h2>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Upload Your Clip</h3>
+      <p>Drag and drop your file directly into the dashboard. MP4 and WEBM supported, up to 2 GB. Nothing is ever uploaded to a server.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Highlight the Watermark</h3>
+      <p>Adjust the smart brush to fit the stamp and paint over it. The engine analyzes surrounding pixels and rebuilds the covered area layer by layer, then blends it seamlessly.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Process &amp; Download</h3>
+      <p>Click "Remove Now" or "Compress Now". The result plays instantly in your browser — download it with one click.</p>
+    </div>
+  </div>
+  <p class="tagline">Zero blur, total clarity — your original quality stays untouched outside the masked zone.</p>
+</section>
+
+<footer>
+  © 2026 ClearFrame · All processing happens locally in your browser. Your videos never leave your device.<br/>
+  Only use ClearFrame on videos you own or have permission to edit.
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
