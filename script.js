@@ -94,6 +94,69 @@ document.querySelectorAll(".tab").forEach((tab) => {
 });
 
 /* ============================================================
+   ABOUT MODAL
+   ============================================================ */
+(() => {
+  const overlay = $("aboutOverlay");
+  const openBtn = $("aboutBtn");
+  const closeBtn = $("aboutClose");
+  let lastFocused = null;
+
+  function openModal(e) {
+    if (e) e.preventDefault();
+    lastFocused = document.activeElement;
+    overlay.hidden = false;
+    // Double rAF ensures the browser registers the initial state
+    // before the transition class is applied (reliable fade-in).
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add("visible")));
+    document.body.classList.add("modal-open");
+    closeBtn.focus();
+    document.addEventListener("keydown", onKeydown);
+  }
+
+  function closeModal() {
+    overlay.classList.remove("visible");
+    document.removeEventListener("keydown", onKeydown);
+    document.body.classList.remove("modal-open");
+    const finish = () => {
+      overlay.hidden = true;
+      if (lastFocused) lastFocused.focus();
+    };
+    // Wait for fade-out; fallback in case transitionend never fires
+    let done = false;
+    overlay.addEventListener("transitionend", () => { if (!done) { done = true; finish(); } }, { once: true });
+    setTimeout(() => { if (!done) { done = true; finish(); } }, 350);
+  }
+
+  function onKeydown(e) {
+    if (e.key === "Escape") {
+      closeModal();
+      return;
+    }
+    // Simple focus trap — keep Tab cycling inside the modal
+    if (e.key === "Tab") {
+      const focusables = overlay.querySelectorAll("button, a[href]");
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  openBtn.addEventListener("click", openModal);
+  closeBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeModal(); // click outside the popup
+  });
+})();
+
+/* ============================================================
    TOOL 1 — WATERMARK REMOVER
    ============================================================ */
 (() => {
